@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>EduOpedia</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #f8f9fa;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .logo-img {
+            width: 30px;
+            height: 30px;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #007bff;
+        }
+        .content {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 200px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        .sidebar-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        .history {
+            margin-top: auto;
+        }
+        .history h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .chat-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 20px;
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 80px;
+            z-index: 10;
+        }
+        .message {
+            max-width: 70%;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            word-wrap: break-word;
+        }
+        .user-message {
+            align-self: flex-end;
+            background-color: #007bff;
+            color: white;
+        }
+        .bot-message {
+            align-self: flex-start;
+            background-color: #f1f0f0;
+            color: black;
+        }
+        .input-container {
+            display: flex;
+            padding: 20px;
+            background-color: #f8f9fa;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+        }
+        #user-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        #send-button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .generate-text {
+            text-align: center;
+            font-size: 1.5em;
+            padding: 20px;
+            position: relative;
+            z-index: 15;
+        }
+        .class_anchor {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">
+                <img src="Vector.png" alt="User" class="logo-img">
+            </div>
+            Virtual Mentor
+        </div>
+        <div class="user-avatar"></div>
+    </div>
+    <div class="content">
+        <div class="sidebar">
+            <div class="sidebar-item">
+                <div class="sidebar-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                Learn By Text
+            </div>
+            <a class="class_anchor" href="video.html">
+                <div class="sidebar-item">
+                    <div class="sidebar-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    Learn By Video
+                </div>
+            </a>
+            <div class="history">
+                <h2>History</h2>
+                <p>Login your account for more Tutorials</p>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="generate-text">Generate Any Tutorial You want</div>
+            <div class="chat-container" id="chat-container"></div>
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Want to learn about something ??">
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = "";
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+
+        function addMessage(message, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(isUser ? 'user-message' : 'bot-message');
+            messageDiv.textContent = message;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function generateResponse(userMessage) {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: [{ role: "user", content: userMessage }],
+                    max_tokens: 100
+                })
+            });
+
+            const data = await response.json();
+            const botMessage = data.choices[0].message.content;
+            return botMessage;
+        }
+
+        async function handleUserInput() {
+            const message = userInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                userInput.value = '';
+                setTimeout(async () => {
+                    const response = await generateResponse(message);
+                    addMessage(response, false);
+                }, 1000);
+            }
+        }
+
+        sendButton.addEventListener('click', handleUserInput);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleUserInput();
+            }
+        });
+    </script>
+</body>
+</html>
